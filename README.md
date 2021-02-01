@@ -1,0 +1,14 @@
+AniMatrix
+===============
+AniMatrix is a utility library designed to make iet easy to generate patterns and animations on LED matrix displays, particularly those that are folded linear strips of LEDs rather than addressable two dimension matrix devices.  (E.g., a 16x16 LED matrix that is actually a folded strip of 256 linearly-connected LEDs.)  It makes use of the excellent FastLED library (https://fastled.io) to handle low level command and control of a wide variety of smart LEDs.
+
+## Basic Use
+Generally there are two types of public functions.   Those named `set*(...)` operate in a virtual 2D (x,y) space allowing any LED in the matrix to be addressed by its (x,y) coordinates in the matrix (even though electrically the matrix is one long strip of (x * y) LEDs).  The `set*(...)` functions provide an interface that is oblivious to how the LED strip is wired and folded into the matrix, relying on a private `xyToN()` function to map (x,y) coordinates to identify the actual Nth LED in the strip.  These functions are easy to write and use, but they're inefficient in that they must perform the (x,y) -> N mapping every time they address an LED.
+
+There are also functions named `draw*(...)`, which operate in the actual 0 to N linear space of the matrix as an LED strip.  These functions should be more performant as they avoid the (x,y) -> N mapping for each manipulated LED and they can take advantage of direct knowledge of the layout of the strip, e.g. to easily draw a row of LEDs in the matrix given any row is likely to be a consecutive group of LEDs in the strip.  They are more difficult to write and maintain, though, than their `set*(...)` counterparts.
+
+All patterns and animations supported by LEDControl are based on a simple clock model in which an unsigned integer counter is incremented each time the LED matrix is updated.  Animation patterns need to do their own modulo aritmetic based on the value of the counter.  (E.g,. a pattern that repeats after twenty steps will calculate what to draw at each step based on `counter%20` math.)
+
+The LED matrix must be defined properly using the FastLED library, as AniMatrix animations will use FastLED functions to carry out the desired lighting effects.  FastLED library functions can be intermixed with AniMatrix functions assuming reasonable knowledge of how FastLED works, for example as part of setting overall LED brightness, doing color math, etc.  (See the excellent FastLED documention for more insight on this.)
+
+This library is still under very active development so should be expected to change often and likely not in backward compatible ways. Check `AniMatrix.h` to see what public functions are provided in any particular version.
